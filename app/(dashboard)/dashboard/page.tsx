@@ -1,9 +1,26 @@
 'use client';
-
 import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
+import { api } from '@/lib/api';
 
 export default function DashboardPage() {
   const { data: session } = useSession();
+  const [stats, setStats] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      if (session?.user?.id) {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/dashboard?user_id=${session.user.id}`);
+          const data = await res.json();
+          setStats(data);
+        } catch (error) {
+          console.error("Failed to fetch dashboard stats", error);
+        }
+      }
+    };
+    fetchStats();
+  }, [session]);
 
   return (
     <div className="py-6">
@@ -29,7 +46,7 @@ export default function DashboardPage() {
                       <dl>
                         <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
                         <dd>
-                          <div className="text-lg font-medium text-gray-900">1</div>
+                          <div className="text-lg font-medium text-gray-900">{stats?.total_users || 0}</div>
                         </dd>
                       </dl>
                     </div>
@@ -47,9 +64,9 @@ export default function DashboardPage() {
                     </div>
                     <div className="ml-5 w-0 flex-1">
                       <dl>
-                        <dt className="text-sm font-medium text-gray-500 truncate">Articles Read</dt>
+                        <dt className="text-sm font-medium text-gray-500 truncate">My Content</dt>
                         <dd>
-                          <div className="text-lg font-medium text-gray-900">0</div>
+                          <div className="text-lg font-medium text-gray-900">{stats?.my_content || 0}</div>
                         </dd>
                       </dl>
                     </div>
@@ -70,7 +87,7 @@ export default function DashboardPage() {
                         <dt className="text-sm font-medium text-gray-500 truncate">Member Since</dt>
                         <dd>
                           <div className="text-lg font-medium text-gray-900">
-                            {new Date(session?.user?.createdAt || Date.now()).toLocaleDateString()}
+                             {session?.user?.createdAt ? new Date(session.user.createdAt).toLocaleDateString() : 'Recently'}
                           </div>
                         </dd>
                       </dl>

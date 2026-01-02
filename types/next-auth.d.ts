@@ -8,8 +8,10 @@ declare module 'next-auth' {
       email?: string | null;
       image?: string | null;
       role?: string;
+      accessToken?: string;
       createdAt?: Date;
     };
+    accessToken?: string;
   }
 
   interface User {
@@ -18,6 +20,7 @@ declare module 'next-auth' {
     email?: string | null;
     image?: string | null;
     role?: string;
+    accessToken?: string;
   }
 }
 
@@ -25,18 +28,6 @@ declare module 'next-auth/jwt' {
   interface JWT {
     id: string;
     role?: string;
+    accessToken?: string;
   }
-}
-
-declare module 'mongoose' {
-  interface ConnectOptions {
-    bufferCommands?: boolean;
-  }
-}
-
-declare global {
-  var mongoose: {
-    conn: any;
-    promise: any;
-  };
 }

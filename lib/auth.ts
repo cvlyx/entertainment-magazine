@@ -1,11 +1,8 @@
 import { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import GoogleProvider from 'next-auth/providers/google';
-import User from '@/models/User';
-import dbConnect from './db';
+import { api } from './api';
 
 export const authOptions: AuthOptions = {
-  // Configure one or more authentication providers
   providers: [
     CredentialsProvider({
       name: 'Credentials',
@@ -18,34 +15,37 @@ export const authOptions: AuthOptions = {
           throw new Error('Please enter your email and password');
         }
 
-        await dbConnect();
-        const user = await User.findOne({ email: credentials.email });
+        try {
+          const res = await api.auth.login({
+            email: credentials.email,
+            password: credentials.password,
+          });
 
-        if (!user || !(await user.comparePassword(credentials.password))) {
+          if (res.user && res.token) {
+            return {
+              id: res.user.id,
+              name: res.user.username,
+              email: res.user.email,
+              role: res.user.role,
+              accessToken: res.token,
+            };
+          }
+          return null;
+        } catch (error) {
           throw new Error('Invalid email or password');
         }
-
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        };
       },
-    }),
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || '',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     }),
   ],
   session: {
-    strategy: 'jwt' as const,
+    strategy: 'jwt',
   },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.role = user.role;
         token.id = user.id;
+        token.accessToken = user.accessToken;
       }
       return token;
     },
@@ -53,6 +53,7 @@ export const authOptions: AuthOptions = {
       if (session?.user) {
         session.user.role = token.role as string;
         session.user.id = token.id as string;
+        session.accessToken = token.accessToken as string;
       }
       return session;
     },

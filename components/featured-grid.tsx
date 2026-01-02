@@ -1,30 +1,24 @@
 import { Card } from "@/components/ui/card"
 import { Play, ImageIcon, FileText } from "lucide-react"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api"
 
 export function FeaturedGrid() {
-  const featured = [
-    {
-      title: "Exclusive: Inside the Studio with Gwamba",
-      category: "Music",
-      image: "/placeholder.svg?height=600&width=500",
-      type: "video",
-      duration: "12:45",
-    },
-    {
-      title: "The New Wave of Malawian Cinema",
-      category: "Film",
-      image: "/placeholder.svg?height=600&width=500",
-      type: "article",
-      readTime: "8 min read",
-    },
-    {
-      title: "Fashion Forward: Chitenje Meets Streetwear",
-      category: "Lifestyle",
-      image: "/placeholder.svg?height=600&width=500",
-      type: "gallery",
-      photoCount: "24 photos",
-    },
-  ]
+  const [featured, setFeatured] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await api.content.getAll({ is_featured: 1, limit: 3 })
+        if (Array.isArray(data)) {
+          setFeatured(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch featured content", error)
+      }
+    }
+    fetchData()
+  }, [])
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -37,6 +31,8 @@ export function FeaturedGrid() {
     }
   }
 
+  if (featured.length === 0) return null
+
   return (
     <section className="container mx-auto px-4 py-16">
       <div className="mb-12 flex items-end justify-between">
@@ -48,6 +44,8 @@ export function FeaturedGrid() {
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {featured.map((item, i) => {
           const Icon = getIcon(item.type)
+          const meta = item.meta_data || {}
+          
           return (
             <Card
               key={i}
@@ -55,7 +53,7 @@ export function FeaturedGrid() {
             >
               <div className="relative aspect-[4/5] overflow-hidden">
                 <img
-                  src={item.image || "/placeholder.svg"}
+                  src={item.image_url || "/placeholder.svg"}
                   alt={item.title}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
@@ -71,12 +69,12 @@ export function FeaturedGrid() {
 
                 <div className="absolute bottom-0 left-0 right-0 p-6">
                   <div className="mb-3 flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-primary">{item.category}</span>
+                    <span className="text-xs font-bold uppercase tracking-wider text-primary">{item.category_name || 'General'}</span>
                     <div className="flex items-center gap-1 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
                       <Icon className="h-3 w-3" />
-                      {item.type === "video" && item.duration}
-                      {item.type === "article" && item.readTime}
-                      {item.type === "gallery" && item.photoCount}
+                      {item.type === "video" && meta.duration}
+                      {item.type === "article" && meta.readTime}
+                      {item.type === "gallery" && meta.photoCount}
                     </div>
                   </div>
                   <h3 className="text-xl font-bold leading-tight text-white text-balance">{item.title}</h3>

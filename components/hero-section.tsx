@@ -3,22 +3,39 @@
 import { Play, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useState, useEffect } from "react"
+import { api } from "@/lib/api"
 
 export function HeroSection() {
   const [scrollY, setScrollY] = useState(0)
+  const [heroContent, setHeroContent] = useState<any>(null)
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY)
     window.addEventListener("scroll", handleScroll)
+    
+    const fetchHero = async () => {
+      try {
+        const data = await api.content.getAll({ is_featured: 1, limit: 1 })
+        if (Array.isArray(data) && data.length > 0) {
+          setHeroContent(data[0])
+        }
+      } catch (error) {
+        console.error("Failed to fetch hero content", error)
+      }
+    }
+    fetchHero()
+
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  if (!heroContent) return null // Or a skeleton
 
   return (
     <section className="relative h-[90vh] overflow-hidden">
       <div className="absolute inset-0" style={{ transform: `translateY(${scrollY * 0.5}px)` }}>
         <img
-          src="/african-musicians-performing-on-stage-with-dramati.jpg"
-          alt="Featured artist"
+          src={heroContent.image_url || "/african-musicians-performing-on-stage-with-dramati.jpg"}
+          alt={heroContent.title}
           className="h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/20" />
@@ -35,19 +52,20 @@ export function HeroSection() {
           </div>
 
           <h1 className="font-sans text-5xl font-bold leading-tight tracking-tight text-balance animate-in fade-in slide-in-from-bottom-8 md:text-7xl lg:text-8xl">
-            The Rise of Malawian Afrobeats
+            {heroContent.title}
           </h1>
 
           <p className="text-lg leading-relaxed text-muted-foreground text-pretty animate-in fade-in slide-in-from-bottom-12 md:text-xl lg:text-2xl">
-            How a new generation of artists is putting Malawi on the global music map with infectious rhythms and
-            powerful storytelling that resonates across continents
+            {heroContent.excerpt}
           </p>
 
           <div className="flex flex-wrap gap-4 animate-in fade-in slide-in-from-bottom-16">
-            <Button size="lg" className="gap-2 text-base">
-              <Play className="h-5 w-5" />
-              Watch Documentary
-            </Button>
+            {heroContent.video_url && (
+              <Button size="lg" className="gap-2 text-base">
+                <Play className="h-5 w-5" />
+                Watch Now
+              </Button>
+            )}
             <Button size="lg" variant="outline" className="text-base bg-transparent">
               Read Full Story
             </Button>

@@ -1,44 +1,26 @@
 import { TrendingUp, ArrowUpRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api"
 
 export function TrendingSection() {
-  const trending = [
-    {
-      rank: 1,
-      title: "Eli Njuchi drops surprise EP",
-      category: "Music",
-      image: "/placeholder.svg?height=100&width=100",
-      change: "+12%",
-    },
-    {
-      rank: 2,
-      title: "New Malawian film wins at Cannes",
-      category: "Film",
-      image: "/placeholder.svg?height=100&width=100",
-      change: "+8%",
-    },
-    {
-      rank: 3,
-      title: "Tay Grin announces world tour",
-      category: "Music",
-      image: "/placeholder.svg?height=100&width=100",
-      change: "+15%",
-    },
-    {
-      rank: 4,
-      title: "Fashion Week Blantyre highlights",
-      category: "Lifestyle",
-      image: "/placeholder.svg?height=100&width=100",
-      change: "+6%",
-    },
-    {
-      rank: 5,
-      title: "Gwamba's studio documentary",
-      category: "Music",
-      image: "/placeholder.svg?height=100&width=100",
-      change: "+10%",
-    },
-  ]
+  const [trending, setTrending] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const data = await api.content.getAll({ is_trending: 1, limit: 5 })
+        if (Array.isArray(data)) {
+          setTrending(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch trending content", error)
+      }
+    }
+    fetchTrending()
+  }, [])
+
+  if (trending.length === 0) return null
 
   return (
     <section className="border-y border-border bg-secondary/30 py-16">
@@ -55,26 +37,28 @@ export function TrendingSection() {
           </div>
 
           <div className="space-y-4">
-            {trending.map((item) => (
+            {trending.map((item, index) => (
               <Card
-                key={item.rank}
+                key={item.id}
                 className="group overflow-hidden border-0 bg-card transition-all hover:scale-[1.02] hover:shadow-lg"
               >
                 <div className="flex items-center gap-4 p-4">
                   <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl font-bold text-primary">
-                    {item.rank}
+                    {index + 1}
                   </div>
                   <img
-                    src={item.image || "/placeholder.svg"}
+                    src={item.image_url || "/placeholder.svg"}
                     alt={item.title}
                     className="h-20 w-20 shrink-0 rounded-lg object-cover"
                   />
                   <div className="flex-1">
                     <div className="mb-1 flex items-center gap-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-primary">{item.category}</span>
+                      <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                        {item.category_name || 'News'}
+                      </span>
                       <span className="flex items-center gap-1 text-xs font-medium text-green-500">
                         <ArrowUpRight className="h-3 w-3" />
-                        {item.change}
+                        Trending
                       </span>
                     </div>
                     <h3 className="font-bold leading-tight group-hover:text-primary">{item.title}</h3>

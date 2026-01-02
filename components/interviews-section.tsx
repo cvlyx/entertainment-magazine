@@ -1,26 +1,25 @@
 import { Card } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+import { api } from "@/lib/api"
 
 export function InterviewsSection() {
-  const interviews = [
-    {
-      name: "Onesimus",
-      title: "The Voice of a Generation",
-      quote: "Music is how we tell our stories, how we preserve our culture for the next generation",
-      image: "/african-male-musician-portrait.jpg",
-    },
-    {
-      name: "Sangie",
-      title: "Breaking Boundaries",
-      quote: "As a female artist in Malawi, I want to inspire young girls to chase their dreams fearlessly",
-      image: "/african-female-musician-portrait.jpg",
-    },
-    {
-      name: "Piksy",
-      title: "The Future of Afro-Pop",
-      quote: "We're creating a sound that's uniquely Malawian but speaks to the whole continent",
-      image: "/african-young-musician-portrait.jpg",
-    },
-  ]
+  const [interviews, setInterviews] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchInterviews = async () => {
+      try {
+        const data = await api.content.getAll({ type: 'interview', limit: 3 })
+        if (Array.isArray(data)) {
+          setInterviews(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch interviews", error)
+      }
+    }
+    fetchInterviews()
+  }, [])
+
+  if (interviews.length === 0) return null
 
   return (
     <section id="interviews" className="container mx-auto px-4 py-16">
@@ -30,21 +29,23 @@ export function InterviewsSection() {
       </div>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {interviews.map((interview, i) => (
-          <Card key={i} className="group relative overflow-hidden border-0 bg-card">
+          <Card key={interview.id} className="group relative overflow-hidden border-0 bg-card">
             <div className="relative aspect-square overflow-hidden">
               <img
-                src={interview.image || "/placeholder.svg"}
-                alt={interview.name}
+                src={interview.image_url || "/placeholder.svg"}
+                alt={interview.title}
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent" />
               <div className="absolute bottom-0 left-0 right-0 p-6">
                 <div className="mb-2 text-xs font-bold uppercase tracking-wider text-primary">Interview</div>
-                <h3 className="mb-2 text-2xl font-bold">{interview.name}</h3>
-                <p className="mb-4 text-sm text-muted-foreground">{interview.title}</p>
-                <blockquote className="border-l-2 border-primary pl-4 text-sm italic text-pretty">
-                  "{interview.quote}"
-                </blockquote>
+                <h3 className="mb-2 text-2xl font-bold">{interview.title}</h3>
+                <p className="mb-4 text-sm text-muted-foreground line-clamp-2">{interview.summary}</p>
+                {interview.meta_data?.quote && (
+                  <blockquote className="border-l-2 border-primary pl-4 text-sm italic text-pretty">
+                    "{interview.meta_data.quote}"
+                  </blockquote>
+                )}
               </div>
             </div>
           </Card>

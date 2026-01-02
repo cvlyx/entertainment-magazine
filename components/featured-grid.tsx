@@ -1,3 +1,5 @@
+"use client"
+
 import { Card } from "@/components/ui/card"
 import { Play, ImageIcon, FileText } from "lucide-react"
 import { useEffect, useState } from "react"

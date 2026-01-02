@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once '../src/Config/Database.php';
 require_once '../src/Controllers/AuthController.php';
+require_once '../src/Controllers/ContentController.php';
 require_once '../src/Controllers/DashboardController.php';
 
 use Config\Database;

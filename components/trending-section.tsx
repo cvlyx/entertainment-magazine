@@ -1,3 +1,5 @@
+"use client"
+
 import { TrendingUp, ArrowUpRight } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { useEffect, useState } from "react"

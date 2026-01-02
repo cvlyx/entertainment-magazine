@@ -11,7 +11,7 @@ export default function DashboardPage() {
     const fetchStats = async () => {
       if (session?.user?.id) {
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/dashboard?user_id=${session.user.id}`);
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/dashboard?user_id=${session?.user?.id}`);
           const data = await res.json();
           setStats(data);
         } catch (error) {
